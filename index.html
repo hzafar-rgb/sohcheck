@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini-Whiteboard Check: The Sine Ratio (Sides & Angles)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=STIX+Two+Math&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-math: 'STIX Two Math', 'Cambria Math', 'Times New Roman', serif;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Mathematical Typography & Vertical Stacked Fractions */
+    .math-expr {
+      font-family: var(--font-math);
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+    }
+
+    .math-var {
+      font-family: var(--font-math);
+      font-style: italic;
+    }
+
+    .mfrac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 0.2em;
+      line-height: 1.05;
+    }
+
+    .mfrac > .num {
+      border-bottom: 2.5px solid currentColor;
+      padding: 0 0.35em 0.12em 0.35em;
+      display: block;
+      text-align: center;
+      width: 100%;
+    }
+
+    .mfrac > .den {
+      padding: 0.14em 0.35em 0 0.35em;
+      display: block;
+      text-align: center;
+      width: 100%;
+    }
+
+    .mfrac-sm > .num {
+      border-bottom-width: 1.8px;
+      padding: 0 0.25em 0.08em 0.25em;
+    }
+
+    .mfrac-sm > .den {
+      padding: 0.08em 0.25em 0 0.25em;
+    }
+
+    /* Animated dashed pointer line for Opposite side */
+    @keyframes dashFlow {
+      to {
+        stroke-dashoffset: -24;
+      }
+    }
+
+    .opp-pointer-line {
+      animation: dashFlow 1.2s linear infinite;
+    }
+
+    /* Smooth card transitions */
+    .option-card {
+      transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+                  border-color 0.16s ease,
+                  background-color 0.16s ease;
+    }
+
+    .option-card:hover:not(.revealed-card) {
+      transform: translateY(-2px);
+    }
+
+    .option-card:active:not(.revealed-card) {
+      transform: translateY(0px) scale(0.995);
+    }
+
+    /* Subtle dot grid background for geometry canvas */
+    .geo-grid {
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.25px, transparent 1.25px);
+      background-size: 20px 20px;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen lg:h-screen lg:overflow-hidden flex flex-col justify-between">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="bg-white border-b border-slate-200 px-4 py-2.5 shrink-0 shadow-sm">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand & Topic Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-sm font-bold text-lg tracking-tight text-white shrink-0">
+          sin
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900">
+              Mini-Whiteboard Check: The Sine Ratio (Sides &amp; Angles)
+            </h1>
+            <span class="hidden xl:inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+              GCSE Foundation Tier
+            </span>
+          </div>
+          <p class="text-xs text-slate-600 hidden sm:block">
+            Q1–Q3: Finding a Missing Side • Q4–Q6: Finding a Missing Angle (<span class="math-expr font-semibold text-slate-900">sin<sup>−1</sup></span>)
+          </p>
+        </div>
+      </div>
+
+      <!-- Center: Question Navigation Pills (Q1 - Q6) -->
+      <nav aria-label="Question Navigation" class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <span class="hidden md:inline-block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 px-2">Sides</span>
+        <button id="nav-q0" onclick="goToQuestion(0)" class="q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all">Q1</button>
+        <button id="nav-q1" onclick="goToQuestion(1)" class="q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all">Q2</button>
+        <button id="nav-q2" onclick="goToQuestion(2)" class="q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all">Q3</button>
+        <div class="h-5 w-px bg-slate-300 mx-0.5"></div>
+        <span class="hidden md:inline-block text-[10px] font-extrabold uppercase tracking-wider text-slate-500 px-2">Angles</span>
+        <button id="nav-q3" onclick="goToQuestion(3)" class="q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all">Q4</button>
+        <button id="nav-q4" onclick="goToQuestion(4)" class="q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all">Q5</button>
+        <button id="nav-q5" onclick="goToQuestion(5)" class="q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all">Q6</button>
+      </nav>
+
+      <!-- Right Controls: Section Indicator & Full Screen -->
+      <div class="flex items-center gap-2.5">
+        <div id="section-mode-pill" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-extrabold">
+          <span id="section-mode-dot" class="w-2 h-2 rounded-full bg-blue-600"></span>
+          <span id="section-mode-text">Part 1: Missing Sides (Q1–Q3)</span>
+        </div>
+
+        <!-- Full Screen Toggle Button -->
+        <button id="fullscreen-btn" onclick="toggleFullScreen()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 border border-slate-300 text-xs sm:text-sm font-bold transition-all shadow-sm" title="Toggle Full Screen (Shortcut: F)">
+          <svg id="fs-icon-expand" class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          </svg>
+          <svg id="fs-icon-compress" class="w-4 h-4 text-blue-600 hidden" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+          </svg>
+          <span id="fs-btn-text" class="hidden md:inline">Full Screen</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN SLIDE WORKSPACE ================= -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 py-3 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 overflow-y-auto lg:overflow-hidden">
+    
+    <!-- LEFT COLUMN: Triangle Visual + Worked Rearrangement Panel (5 cols on desktop) -->
+    <section class="lg:col-span-5 flex flex-col gap-3 min-h-0">
+      
+      <!-- Triangle Diagram Card -->
+      <div class="bg-white text-slate-900 rounded-2xl shadow-sm border border-slate-200 flex flex-col flex-1 min-h-[280px] overflow-hidden">
+        
+        <!-- Diagram Header Bar -->
+        <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
+          <div class="flex items-center gap-2">
+            <span id="q-badge" class="px-2.5 py-0.5 rounded-lg bg-blue-600 text-white font-extrabold text-xs tracking-wide uppercase">
+              Question 1 of 6
+            </span>
+            <span id="q-variation-tag" class="text-xs font-semibold text-slate-700 bg-slate-200/75 px-2.5 py-0.5 rounded-md">
+              Standard Orientation • Find Opposite
+            </span>
+          </div>
+
+          <!-- Show O / H Labels Scaffolding Toggle -->
+          <button id="toggle-labels-btn" onclick="toggleOHLabels()" class="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border transition-all shadow-sm bg-white text-slate-700 border-slate-300 hover:bg-slate-50" title="Keyboard shortcut: L">
+            <span id="oh-dot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span id="oh-btn-text">Show O / H Labels</span>
+            <span class="text-[10px] font-mono opacity-60 hidden sm:inline">[L]</span>
+          </button>
+        </div>
+
+        <!-- SVG Canvas Container -->
+        <div class="geo-grid flex-1 relative flex items-center justify-center p-2 min-h-[280px]">
+          <div class="absolute top-2.5 left-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider pointer-events-none z-10 bg-white/80 px-2 py-0.5 rounded border border-slate-200">
+            Diagram not accurately drawn
+          </div>
+          
+          <!-- Dynamic Custom SVG injected here -->
+          <svg
+            id="triangle-svg"
+            viewBox="0 0 520 320"
+            width="100%"
+            height="100%"
+            preserveAspectRatio="xMidYMid meet"
+            style="min-height: 270px; width: 100%; height: 100%; display: block;"
+            class="w-full h-full max-h-[300px] select-none overflow-visible"
+            aria-label="Right-angled triangle diagram"
+          ></svg>
+        </div>
+      </div>
+
+      <!-- Worked Rearrangement / Pedagogical Scaffold Panel -->
+      <div id="worked-panel" class="rounded-2xl border transition-all duration-300 p-3.5 shrink-0 bg-white border-slate-200 shadow-sm">
+        <!-- Populated dynamically based on Reveal state -->
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: Question Prompt & 2x2 Multiple Choice Grid (7 cols on desktop) -->
+    <section class="lg:col-span-7 flex flex-col gap-3 min-h-0">
+      
+      <!-- Question Prompt Banner + Equation + SOH Formula Triangle -->
+      <div class="bg-white border border-slate-200 rounded-2xl px-5 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-sm">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-blue-600 block mb-0.5">
+            Mini-Whiteboard Prompt
+          </span>
+          <h2 id="question-prompt" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            Which equation is correct for finding <span class="math-var text-amber-600">x</span>?
+          </h2>
+        </div>
+
+        <!-- Formula Reminder Pill + SOH Triangle Next to Equation -->
+        <div class="flex items-center gap-3.5 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-inner">
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 hidden sm:inline">Sine Ratio:</span>
+            <div class="math-expr text-base sm:text-lg text-slate-900 font-bold flex items-center">
+              <span class="text-indigo-700 font-extrabold">sin(θ)</span>
+              <span class="mx-1">=</span>
+              <span class="mfrac mfrac-sm text-sm sm:text-base">
+                <span class="num text-rose-700 font-extrabold">Opposite</span>
+                <span class="den text-sky-700 font-extrabold">Hypotenuse</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Vertical Divider -->
+          <div class="h-10 w-px bg-slate-300"></div>
+
+          <!-- Dynamic SOH Formula Triangle Container -->
+          <div id="header-soh-triangle" class="flex items-center gap-2" title="SOH Formula Triangle: O = Opposite, S = sin(θ), H = Hypotenuse">
+            <!-- Populated dynamically by renderApp() -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 2x2 Multiple Choice Options Grid -->
+      <div id="options-grid" class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3.5 min-h-0">
+        <!-- 4 Option Cards (A, B, C, D) dynamically rendered here -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= BOTTOM TEACHER CONTROL BAR ================= -->
+  <footer class="bg-white border-t border-slate-200 px-4 py-2.5 shrink-0 shadow-sm">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Left: Previous / Next Buttons -->
+      <div class="flex items-center gap-2">
+        <button id="prev-btn" onclick="prevQuestion()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none text-slate-700 border border-slate-300 text-sm font-bold transition-all shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Prev</span>
+        </button>
+
+        <button id="next-btn" onclick="nextQuestion()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 disabled:pointer-events-none text-slate-700 border border-slate-300 text-sm font-bold transition-all shadow-sm">
+          <span>Next</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <span id="selection-hint" class="hidden xl:inline-block text-xs font-medium text-slate-500 ml-2">
+          Tip: Click any card A–D to highlight a student response before revealing.
+        </span>
+      </div>
+
+      <!-- Center: Prominent Reveal Solution Button -->
+      <div class="flex items-center gap-3">
+        <button id="reveal-btn" onclick="toggleReveal()" class="flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-extrabold text-sm sm:text-base tracking-wide transition-all shadow-md bg-emerald-600 hover:bg-emerald-500 text-white">
+          <svg id="reveal-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          <span id="reveal-btn-text">Reveal Solution</span>
+          <span class="text-xs font-mono px-1.5 py-0.5 rounded bg-black/15 text-white font-bold hidden sm:inline">Space</span>
+        </button>
+      </div>
+
+      <!-- Right: Keyboard Shortcuts Legend -->
+      <div class="hidden md:flex items-center gap-3 text-xs font-medium text-slate-500">
+        <span class="flex items-center gap-1">
+          <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">←</kbd>
+          <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">→</kbd>
+          Navigate
+        </span>
+        <span class="flex items-center gap-1">
+          <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">Space</kbd>
+          Reveal
+        </span>
+        <span class="flex items-center gap-1">
+          <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">L</kbd>
+          O/H Labels
+        </span>
+        <span class="flex items-center gap-1">
+          <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">F</kbd>
+          Full Screen
+        </span>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Toast message for Fullscreen fallback if restricted -->
+  <div id="toast-msg" class="fixed bottom-16 right-4 bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold opacity-0 pointer-events-none transition-opacity duration-300 z-50"></div>
+
+  <!-- ================= APPLICATION LOGIC & DATA ================= -->
+  <script>
+    /**
+     * Helper to build vertical stacked fraction HTML
+     */
+    function fracHTML(num, den, sizeClass = '') {
+      return `<span class="mfrac ${sizeClass}"><span class="num">${num}</span><span class="den">${den}</span></span>`;
+    }
+
+    /**
+     * Renders the visual "SOH" Formula Triangle SVG
+     * - Top apex: O (Opposite)
+     * - Bottom-left: S (sin θ)
+     * - Bottom-right: H (Hypotenuse)
+     * - Middle operation signs: ÷ on horizontal divider, × on vertical divider
+     * When isRevealed is true, highlights the target variable ('O', 'H', or 'S')
+     */
+    function buildSOHTriangleSVG(target = 'O', isRevealed = false, dimensions = 'w-20 h-16') {
+      const highlightO = isRevealed && target === 'O';
+      const highlightS = isRevealed && target === 'S';
+      const highlightH = isRevealed && target === 'H';
+
+      // Fill colours for the 3 regions of the SOH triangle
+      const fillO = highlightO ? '#fef08a' : '#ffe4e6'; // Amber highlight or soft Rose
+      const fillS = highlightS ? '#fef08a' : '#e0e7ff'; // Amber highlight or soft Indigo
+      const fillH = highlightH ? '#fef08a' : '#e0f2fe'; // Amber highlight or soft Sky
+
+      const strokeO = highlightO ? '#d97706' : '#e11d48';
+      const strokeS = highlightS ? '#d97706' : '#4f46e5';
+      const strokeH = highlightH ? '#d97706' : '#0284c7';
+
+      return `
+        <svg viewBox="0 0 120 98" class="${dimensions} shrink-0 select-none overflow-visible" aria-label="SOH Formula Triangle">
+          <!-- Top Apex: Opposite (O) -->
+          <polygon
+            points="60,6 29,51 91,51"
+            fill="${fillO}"
+            stroke="${highlightO ? strokeO : '#334155'}"
+            stroke-width="${highlightO ? '3' : '2'}"
+            stroke-linejoin="round"
+          />
+          <!-- Bottom-Left: Sine (S) -->
+          <polygon
+            points="29,51 6,88 60,88 60,51"
+            fill="${fillS}"
+            stroke="${highlightS ? strokeS : '#334155'}"
+            stroke-width="${highlightS ? '3' : '2'}"
+            stroke-linejoin="round"
+          />
+          <!-- Bottom-Right: Hypotenuse (H) -->
+          <polygon
+            points="60,51 60,88 114,88 91,51"
+            fill="${fillH}"
+            stroke="${highlightH ? strokeH : '#334155'}"
+            stroke-width="${highlightH ? '3' : '2'}"
+            stroke-linejoin="round"
+          />
+
+          <!-- Outer Triangle Crisp Border -->
+          <polygon
+            points="60,6 6,88 114,88"
+            fill="none"
+            stroke="#0f172a"
+            stroke-width="2.5"
+            stroke-linejoin="round"
+          />
+
+          <!-- Letters O, S, H -->
+          <text x="60" y="42" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="${highlightO ? '#b45309' : '#be123c'}">O</text>
+          <text x="36" y="79" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="21" fill="${highlightS ? '#b45309' : '#3730a3'}">S</text>
+          <text x="84" y="79" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="21" fill="${highlightH ? '#b45309' : '#0369a1'}">H</text>
+
+          <!-- Multiplication Badge (Between S and H) -->
+          <circle cx="60" cy="70" r="8.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+          <text x="60" y="74.5" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="14" fill="#0f172a">×</text>
+
+          <!-- Division Badges (On Horizontal Line) -->
+          <circle cx="29" cy="51" r="7.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+          <text x="29" y="55" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="12" fill="#0f172a">÷</text>
+
+          <circle cx="91" cy="51" r="7.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+          <text x="91" y="55" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="12" fill="#0f172a">÷</text>
+        </svg>
+      `;
+    }
+
+    /**
+     * 6-Question Bank crafted with Variation Theory:
+     * - Questions 1 to 3: Finding a Missing Side (Opposite or Hypotenuse)
+     * - Questions 4 to 6: Finding a Missing Angle (using Inverse Sine sin⁻¹)
+     */
+    const QUESTIONS = [
+      // ================ PART 1: FINDING A MISSING SIDE (Q1 - Q3) ================
+
+      // ---------------- QUESTION 1 ----------------
+      {
+        id: 1,
+        category: 'side',
+        variationTag: 'Finding a Side • Unknown Opposite (Standard)',
+        prompt: 'Which equation is correct for finding the side <span class="math-var text-amber-600">x</span>?',
+        sohTarget: 'O',
+        sohRuleHTML: '<span class="text-rose-700 font-extrabold">O</span> = <span class="text-indigo-700 font-extrabold">S</span> × <span class="text-sky-700 font-extrabold">H</span>',
+        geometry: {
+          // Right angle at bottom-left, angle 35° at bottom-right, third vertex at top-left
+          vRight: { x: 105, y: 250 },
+          vAngle: { x: 415, y: 250 },
+          vOther: { x: 105, y: 55 },
+          angleText: '35°',
+          angleRadius: 52,
+          // Opposite side is vRight -> vOther (left vertical)
+          oppLabel: { text: 'x cm', isUnknown: true, offsetX: -52, offsetY: 0 },
+          // Hypotenuse side is vOther -> vAngle (slanted top-right)
+          hypLabel: { text: '12 cm', isUnknown: false, offsetX: 36, offsetY: -26 }
+        },
+        workedSteps: {
+          oppVal: 'x',
+          hypVal: '12',
+          angleVal: '35°',
+          step1: `sin(θ) = ${fracHTML('Opposite', 'Hypotenuse', 'mfrac-sm')}`,
+          step2: `sin(35°) = ${fracHTML('<span class="math-var text-amber-600">x</span>', '12', 'mfrac-sm')}`,
+          step3: `<span class="math-var text-emerald-700">x</span> = 12 × sin(35°)`,
+          decimalCheck: 'x ≈ 6.88 cm (2 d.p.)',
+          explanation: 'Finding O: cover O in the SOH triangle → S × H (multiply by 12).'
+        },
+        options: [
+          {
+            letter: 'A',
+            equationHTML: `<span class="math-var">x</span> = ${fracHTML('12', 'sin(35°)')}`,
+            isCorrect: false,
+            misconceptionTitle: 'Divided instead of multiplying',
+            misconceptionDesc: 'Used division, which is only needed when x is in the denominator (the hypotenuse).'
+          },
+          {
+            letter: 'B',
+            equationHTML: `<span class="math-var">x</span> = 12 × sin(35°)`,
+            isCorrect: true,
+            correctDesc: 'Correct! Covering O in the SOH triangle gives O = S × H, so x = 12 × sin(35°).'
+          },
+          {
+            letter: 'C',
+            equationHTML: `<span class="math-var">x</span> = ${fracHTML('sin(35°)', '12')}`,
+            isCorrect: false,
+            misconceptionTitle: 'Divided the wrong way round',
+            misconceptionDesc: 'Divided sin(35°) by 12 instead of multiplying both sides by 12.'
+          },
+          {
+            letter: 'D',
+            equationHTML: `<span class="math-var">x</span> = 35 × sin(12°)`,
+            isCorrect: false,
+            misconceptionTitle: 'Swapped the angle and side length',
+            misconceptionDesc: 'The sine function always acts on the angle (35°), never on the side length (12 cm).'
+          }
+        ]
+      },
+
+      // ---------------- QUESTION 2 ----------------
+      {
+        id: 2,
+        category: 'side',
+        variationTag: 'Finding a Side • Unknown Hypotenuse (Same Triangle as Q1)',
+        prompt: 'Which equation is correct for finding the side <span class="math-var text-amber-600">x</span>?',
+        sohTarget: 'H',
+        sohRuleHTML: '<span class="text-sky-700 font-extrabold">H</span> = <span class="text-rose-700 font-extrabold">O</span> ÷ <span class="text-indigo-700 font-extrabold">S</span>',
+        geometry: {
+          vRight: { x: 105, y: 250 },
+          vAngle: { x: 415, y: 250 },
+          vOther: { x: 105, y: 55 },
+          angleText: '35°',
+          angleRadius: 52,
+          // Opposite side is vRight -> vOther (left vertical)
+          oppLabel: { text: '12 cm', isUnknown: false, offsetX: -52, offsetY: 0 },
+          // Hypotenuse side is vOther -> vAngle (slanted)
+          hypLabel: { text: 'x cm', isUnknown: true, offsetX: 36, offsetY: -26 }
+        },
+        workedSteps: {
+          oppVal: '12',
+          hypVal: 'x',
+          angleVal: '35°',
+          step1: `sin(θ) = ${fracHTML('Opposite', 'Hypotenuse', 'mfrac-sm')}`,
+          step2: `sin(35°) = ${fracHTML('12', '<span class="math-var text-amber-600">x</span>', 'mfrac-sm')}`,
+          step3: `<span class="math-var text-emerald-700">x</span> = ${fracHTML('12', 'sin(35°)', 'mfrac-sm')}`,
+          decimalCheck: 'x ≈ 20.92 cm (2 d.p.)',
+          explanation: 'Finding H: cover H in the SOH triangle → O ÷ S (12 divided by sin 35°).'
+        },
+        options: [
+          {
+            letter: 'A',
+            equationHTML: `<span class="math-var">x</span> = 12 × sin(35°)`,
+            isCorrect: false,
+            misconceptionTitle: 'Multiplied instead of dividing',
+            misconceptionDesc: 'Compared with Q1, x is now the hypotenuse (H), so multiplying gives a side shorter than 12 cm!'
+          },
+          {
+            letter: 'B',
+            equationHTML: `<span class="math-var">x</span> = ${fracHTML('sin(35°)', '12')}`,
+            isCorrect: false,
+            misconceptionTitle: 'Inverted the division (S ÷ O)',
+            misconceptionDesc: 'Divided sin(35°) by 12 instead of dividing O (12) by S (sin 35°).'
+          },
+          {
+            letter: 'C',
+            equationHTML: `<span class="math-var">x</span> = ${fracHTML('12', 'sin(35°)')}`,
+            isCorrect: true,
+            correctDesc: 'Correct! Covering H in the SOH triangle gives H = O ÷ S, so x = 12 ÷ sin(35°).'
+          },
+          {
+            letter: 'D',
+            equationHTML: `<span class="math-var">x</span> = ${fracHTML('35', 'sin(12°)')}`,
+            isCorrect: false,
+            misconceptionTitle: 'Swapped the angle and side length',
+            misconceptionDesc: 'Placed the side length (12) inside sin() instead of the angle (35°).'
+          }
+        ]
+      },
+
+      // ---------------- QUESTION 3 ----------------
+      {
+        id: 3,
+        category: 'side',
+        variationTag: 'Finding a Side • Rotated Orientation (Unknown Opposite)',
+        prompt: 'Which equation is correct for finding the side <span class="math-var text-amber-600">x</span>?',
+        sohTarget: 'O',
+        sohRuleHTML: '<span class="text-rose-700 font-extrabold">O</span> = <span class="text-indigo-700 font-extrabold">S</span> × <span class="text-sky-700 font-extrabold">H</span>',
+        geometry: {
+          // Right angle at top-right, angle 52° at bottom-right, third vertex at top-left
+          vRight: { x: 390, y: 70 },
+          vAngle: { x: 390, y: 260 },
+          vOther: { x: 130, y: 70 },
+          angleText: '52°',
+          angleRadius: 48,
+          // Opposite side is vRight -> vOther (top horizontal side)
+          oppLabel: { text: 'x cm', isUnknown: true, offsetX: 0, offsetY: -34 },
+          // Hypotenuse side is vOther -> vAngle (slanted bottom-left)
+          hypLabel: { text: '9.5 cm', isUnknown: false, offsetX: -46, offsetY: 26 }
+        },
+        workedSteps: {
+          oppVal: 'x',
+          hypVal: '9.5',
+          angleVal: '52°',
+          step1: `sin(θ) = ${fracHTML('Opposite', 'Hypotenuse', 'mfrac-sm')}`,
+          step2: `sin(52°) = ${fracHTML('<span class="math-var text-amber-600">x</span>', '9.5', 'mfrac-sm')}`,
+          step3: `<span class="math-var text-emerald-700">x</span> = 9.5 × sin(52°)`,
+          decimalCheck: 'x ≈ 7.49 cm (2 d.p.)',
+          explanation: 'Side x is opposite the 52° angle (O). Cover O in SOH → S × H (9.5 × sin 52°).'
+        },
+        options: [
+          {
+            letter: 'A',
+            equationHTML: `<span class="math-var">x</span> = 9.5 × sin(52°)`,
+            isCorrect: true,
+            correctDesc: 'Correct! Side x is opposite the 52° angle, and covering O in SOH gives O = S × H.'
+          },
+          {
+            letter: 'B',
+            equationHTML: `<span class="math-var">x</span> = ${fracHTML('9.5', 'sin(52°)')}`,
+            isCorrect: false,
+            misconceptionTitle: 'Divided instead of multiplying',
+            misconceptionDesc: 'Dividing by sin(52°) would make x longer than the hypotenuse (9.5 cm).'
+          },
+          {
+            letter: 'C',
+            equationHTML: `<span class="math-var">x</span> = ${fracHTML('sin(52°)', '9.5')}`,
+            isCorrect: false,
+            misconceptionTitle: 'Divided the wrong way round',
+            misconceptionDesc: 'Divided sin(52°) by 9.5 instead of multiplying by 9.5.'
+          },
+          {
+            letter: 'D',
+            equationHTML: `<span class="math-var">x</span> = 52 × sin(9.5°)`,
+            isCorrect: false,
+            misconceptionTitle: 'Swapped the angle and side length',
+            misconceptionDesc: '52° is the angle so it must stay inside sin(52°).'
+          }
+        ]
+      },
+
+      // ================ PART 2: FINDING A MISSING ANGLE (Q4 - Q6) ================
+
+      // ---------------- QUESTION 4 ----------------
+      {
+        id: 4,
+        category: 'angle',
+        variationTag: 'Finding an Angle • Standard Orientation (sin⁻¹)',
+        prompt: 'Which equation is correct for finding the angle <span class="math-var text-amber-600">x</span>?',
+        sohTarget: 'S',
+        sohRuleHTML: '<span class="text-indigo-700 font-extrabold">S</span> = <span class="text-rose-700 font-extrabold">O</span> ÷ <span class="text-sky-700 font-extrabold">H</span>',
+        geometry: {
+          // Standard orientation: right angle at bottom-left, angle x° at bottom-right
+          vRight: { x: 105, y: 250 },
+          vAngle: { x: 415, y: 250 },
+          vOther: { x: 105, y: 55 },
+          angleText: 'x°',
+          angleRadius: 52,
+          oppLabel: { text: '7 cm', isUnknown: false, offsetX: -52, offsetY: 0 },
+          hypLabel: { text: '15 cm', isUnknown: false, offsetX: 36, offsetY: -26 }
+        },
+        workedSteps: {
+          oppVal: '7',
+          hypVal: '15',
+          angleVal: 'x°',
+          step1: `sin(θ) = ${fracHTML('Opposite', 'Hypotenuse', 'mfrac-sm')}`,
+          step2: `sin(<span class="math-var text-amber-600">x</span>) = ${fracHTML('7', '15', 'mfrac-sm')}`,
+          step3: `<span class="math-var text-emerald-700">x</span> = sin<sup>−1</sup>(${fracHTML('7', '15', 'mfrac-sm')})`,
+          decimalCheck: 'x ≈ 27.8° (1 d.p.)',
+          explanation: 'Cover S in the SOH triangle → sin(x) = O ÷ H, then apply inverse sine (sin⁻¹).'
+        },
+        options: [
+          {
+            letter: 'A',
+            equationHTML: `<span class="math-var">x</span> = sin<sup>−1</sup>(${fracHTML('15', '7')})`,
+            isCorrect: false,
+            misconceptionTitle: 'Inverted the fraction (H ÷ O instead of O ÷ H)',
+            misconceptionDesc: '15 ÷ 7 is greater than 1, which causes a calculator Math Error! Hypotenuse (15) must be on the bottom.'
+          },
+          {
+            letter: 'B',
+            equationHTML: `<span class="math-var">x</span> = sin<sup>−1</sup>(${fracHTML('7', '15')})`,
+            isCorrect: true,
+            correctDesc: 'Correct! From SOH, sin(x) = 7 ÷ 15, so x = sin⁻¹(7 ÷ 15).'
+          },
+          {
+            letter: 'C',
+            equationHTML: `<span class="math-var">x</span> = sin(${fracHTML('7', '15')})`,
+            isCorrect: false,
+            misconceptionTitle: 'Used sin instead of inverse sine (sin⁻¹)',
+            misconceptionDesc: 'To undo sin(x) and find a missing angle, you must use inverse sine: sin⁻¹ (SHIFT + sin).'
+          },
+          {
+            letter: 'D',
+            equationHTML: `<span class="math-var">x</span> = 15 × sin(7°)`,
+            isCorrect: false,
+            misconceptionTitle: 'Treated x as a missing side length',
+            misconceptionDesc: '7 cm and 15 cm are both side lengths; we are solving for the angle x using sin⁻¹(O ÷ H).'
+          }
+        ]
+      },
+
+      // ---------------- QUESTION 5 ----------------
+      {
+        id: 5,
+        category: 'angle',
+        variationTag: 'Finding an Angle • Reflected & Rotated Orientation (sin⁻¹)',
+        prompt: 'Which equation is correct for finding the angle <span class="math-var text-amber-600">x</span>?',
+        sohTarget: 'S',
+        sohRuleHTML: '<span class="text-indigo-700 font-extrabold">S</span> = <span class="text-rose-700 font-extrabold">O</span> ÷ <span class="text-sky-700 font-extrabold">H</span>',
+        geometry: {
+          // Right angle at bottom-right, angle x° at top-right, third vertex at bottom-left
+          vRight: { x: 385, y: 245 },
+          vAngle: { x: 385, y: 50 },
+          vOther: { x: 135, y: 245 },
+          angleText: 'x°',
+          angleRadius: 48,
+          // Opposite side is vRight -> vOther (bottom horizontal side)
+          oppLabel: { text: '8.4 cm', isUnknown: false, offsetX: 0, offsetY: 36 },
+          // Hypotenuse side is vOther -> vAngle (slanted top-left)
+          hypLabel: { text: '11.2 cm', isUnknown: false, offsetX: -48, offsetY: -24 }
+        },
+        workedSteps: {
+          oppVal: '8.4',
+          hypVal: '11.2',
+          angleVal: 'x°',
+          step1: `sin(θ) = ${fracHTML('Opposite', 'Hypotenuse', 'mfrac-sm')}`,
+          step2: `sin(<span class="math-var text-amber-600">x</span>) = ${fracHTML('8.4', '11.2', 'mfrac-sm')}`,
+          step3: `<span class="math-var text-emerald-700">x</span> = sin<sup>−1</sup>(${fracHTML('8.4', '11.2', 'mfrac-sm')})`,
+          decimalCheck: 'x = 48.6° (1 d.p.)',
+          explanation: '8.4 cm is opposite angle x (O) and 11.2 cm is the hypotenuse (H), so x = sin⁻¹(8.4 ÷ 11.2).'
+        },
+        options: [
+          {
+            letter: 'A',
+            equationHTML: `<span class="math-var">x</span> = sin(${fracHTML('8.4', '11.2')})`,
+            isCorrect: false,
+            misconceptionTitle: 'Forgot the inverse sine (sin⁻¹)',
+            misconceptionDesc: 'sin(x) = 8.4 ÷ 11.2, so you must apply sin⁻¹ to isolate the angle x.'
+          },
+          {
+            letter: 'B',
+            equationHTML: `<span class="math-var">x</span> = sin<sup>−1</sup>(${fracHTML('11.2', '8.4')})`,
+            isCorrect: false,
+            misconceptionTitle: 'Put Hypotenuse on top of Opposite (H ÷ O)',
+            misconceptionDesc: 'In SOH, O is at the top of the triangle, so Opposite (8.4) must go in the numerator.'
+          },
+          {
+            letter: 'C',
+            equationHTML: `<span class="math-var">x</span> = sin<sup>−1</sup>(${fracHTML('8.4', '11.2')})`,
+            isCorrect: true,
+            correctDesc: 'Correct! Covering S in the SOH triangle gives sin(x) = O ÷ H = 8.4 ÷ 11.2, so x = sin⁻¹(8.4 ÷ 11.2).'
+          },
+          {
+            letter: 'D',
+            equationHTML: `<span class="math-var">x</span> = 8.4 × sin<sup>−1</sup>(11.2)`,
+            isCorrect: false,
+            misconceptionTitle: 'Multiplied instead of forming the ratio O ÷ H',
+            misconceptionDesc: 'Inverse sine takes the whole fraction (Opposite ÷ Hypotenuse) inside the brackets.'
+          }
+        ]
+      },
+
+      // ---------------- QUESTION 6 ----------------
+      {
+        id: 6,
+        category: 'angle',
+        variationTag: 'Finding an Angle • Right Angle at Top Apex (sin⁻¹)',
+        prompt: 'Which equation is correct for finding the angle <span class="math-var text-amber-600">x</span>?',
+        sohTarget: 'S',
+        sohRuleHTML: '<span class="text-indigo-700 font-extrabold">S</span> = <span class="text-rose-700 font-extrabold">O</span> ÷ <span class="text-sky-700 font-extrabold">H</span>',
+        geometry: {
+          // Right angle at top apex (278, 62), horizontal hypotenuse along bottom from (85, 236) to (435, 236)
+          vRight: { x: 278, y: 62 },
+          vAngle: { x: 85, y: 236 },
+          vOther: { x: 435, y: 236 },
+          angleText: 'x°',
+          angleRadius: 52,
+          // Opposite side is vRight -> vOther (top-right slanted leg)
+          oppLabel: { text: '13 cm', isUnknown: false, offsetX: 46, offsetY: -20 },
+          // Hypotenuse is vAngle -> vOther (bottom horizontal side)
+          hypLabel: { text: '20 cm', isUnknown: false, offsetX: 0, offsetY: 36 }
+        },
+        workedSteps: {
+          oppVal: '13',
+          hypVal: '20',
+          angleVal: 'x°',
+          step1: `sin(θ) = ${fracHTML('Opposite', 'Hypotenuse', 'mfrac-sm')}`,
+          step2: `sin(<span class="math-var text-amber-600">x</span>) = ${fracHTML('13', '20', 'mfrac-sm')}`,
+          step3: `<span class="math-var text-emerald-700">x</span> = sin<sup>−1</sup>(${fracHTML('13', '20', 'mfrac-sm')})`,
+          decimalCheck: 'x ≈ 40.5° (1 d.p.)',
+          explanation: 'The right angle is at the top apex, so 20 cm is H and 13 cm is O. Thus x = sin⁻¹(13 ÷ 20).'
+        },
+        options: [
+          {
+            letter: 'A',
+            equationHTML: `<span class="math-var">x</span> = sin<sup>−1</sup>(${fracHTML('20', '13')})`,
+            isCorrect: false,
+            misconceptionTitle: 'Assumed the slanted side (13 cm) is the Hypotenuse',
+            misconceptionDesc: 'Because the right angle is at the top apex, the bottom horizontal side (20 cm) is actually the Hypotenuse!'
+          },
+          {
+            letter: 'B',
+            equationHTML: `<span class="math-var">x</span> = cos<sup>−1</sup>(${fracHTML('13', '20')})`,
+            isCorrect: false,
+            misconceptionTitle: 'Used cosine (CAH) instead of sine (SOH)',
+            misconceptionDesc: '13 cm is opposite angle x, not adjacent to it, so we must use sin⁻¹ rather than cos⁻¹.'
+          },
+          {
+            letter: 'C',
+            equationHTML: `<span class="math-var">x</span> = sin(${fracHTML('13', '20')})`,
+            isCorrect: false,
+            misconceptionTitle: 'Used sin instead of inverse sine (sin⁻¹)',
+            misconceptionDesc: 'When finding an angle, you must use inverse sine (sin⁻¹) rather than sin.'
+          },
+          {
+            letter: 'D',
+            equationHTML: `<span class="math-var">x</span> = sin<sup>−1</sup>(${fracHTML('13', '20')})`,
+            isCorrect: true,
+            correctDesc: 'Correct! 13 cm is Opposite angle x and 20 cm is opposite the right angle (Hypotenuse), so x = sin⁻¹(13 ÷ 20).'
+          }
+        ]
+      }
+    ];
+
+    // ---------------- STATE MANAGEMENT ----------------
+    let currentQuestionIndex = 0;
+    // Per-question interactive state for all 6 questions
+    const questionStates = QUESTIONS.map(() => ({
+      revealed: false,
+      showOH: false,
+      selectedLetter: null
+    }));
+
+    function getActiveQuestion(index = currentQuestionIndex) {
+      return QUESTIONS[index];
+    }
+
+    // ---------------- GEOMETRIC VECTOR HELPERS FOR SVG ----------------
+    function unitVec(from, to) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return { x: dx / len, y: dy / len };
+    }
+
+    function midpoint(p1, p2) {
+      return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+    }
+
+    /**
+     * Renders the right-angled triangle SVG with high-contrast dark slate strokes,
+     * right-angle square marker, interior angle arc + pill label, side length pill labels,
+     * and optional Opposite (O) / Hypotenuse (H) scaffolding overlays.
+     */
+    function renderTriangleSVG(question, state) {
+      const svg = document.getElementById('triangle-svg');
+      if (!svg) return;
+
+      const g = question.geometry;
+      const { vRight, vAngle, vOther, angleText, angleRadius, oppLabel, hypLabel } = g;
+      const showOH = state.showOH;
+      const isRevealed = state.revealed;
+
+      // 1. Right-angle square marker at vRight (size 18px)
+      const sqSize = 18;
+      const uRA = unitVec(vRight, vAngle);
+      const uRO = unitVec(vRight, vOther);
+      const p1 = { x: vRight.x + uRA.x * sqSize, y: vRight.y + uRA.y * sqSize };
+      const p2 = {
+        x: vRight.x + uRA.x * sqSize + uRO.x * sqSize,
+        y: vRight.y + uRA.y * sqSize + uRO.y * sqSize
+      };
+      const p3 = { x: vRight.x + uRO.x * sqSize, y: vRight.y + uRO.y * sqSize };
+
+      // 2. Interior angle arc at vAngle between rays (vAngle -> vRight) and (vAngle -> vOther)
+      const uAR = unitVec(vAngle, vRight);
+      const uAO = unitVec(vAngle, vOther);
+      const arcStart = {
+        x: vAngle.x + uAR.x * angleRadius,
+        y: vAngle.y + uAR.y * angleRadius
+      };
+      const arcEnd = {
+        x: vAngle.x + uAO.x * angleRadius,
+        y: vAngle.y + uAO.y * angleRadius
+      };
+      // Determine SVG sweep-flag using 2D cross product so arc always curves inside the triangle
+      const cross = uAR.x * uAO.y - uAR.y * uAO.x;
+      const sweepFlag = cross > 0 ? 1 : 0;
+
+      // Angle bisector unit vector for placing the degree label cleanly inside the corner
+      const bisectorRaw = { x: uAR.x + uAO.x, y: uAR.y + uAO.y };
+      const bisectorLen = Math.hypot(bisectorRaw.x, bisectorRaw.y) || 1;
+      const uBisect = { x: bisectorRaw.x / bisectorLen, y: bisectorRaw.y / bisectorLen };
+      const angleLabelPos = {
+        x: vAngle.x + uBisect.x * (angleRadius + 24),
+        y: vAngle.y + uBisect.y * (angleRadius + 24)
+      };
+
+      // 3. Midpoints and label positions for Opposite (vRight <-> vOther) and Hypotenuse (vOther <-> vAngle)
+      const oppMid = midpoint(vRight, vOther);
+      const hypMid = midpoint(vOther, vAngle);
+
+      const oppLabelPos = {
+        x: oppMid.x + oppLabel.offsetX,
+        y: oppMid.y + oppLabel.offsetY
+      };
+      const hypLabelPos = {
+        x: hypMid.x + hypLabel.offsetX,
+        y: hypMid.y + hypLabel.offsetY
+      };
+
+      // Pointer arrow from near vAngle to Opposite midpoint when O/H labels are active
+      const uAngleToOpp = unitVec(vAngle, oppMid);
+      const arrowStart = {
+        x: vAngle.x + uAngleToOpp.x * (angleRadius + 8),
+        y: vAngle.y + uAngleToOpp.y * (angleRadius + 8)
+      };
+      const arrowEnd = {
+        x: oppMid.x - uAngleToOpp.x * 12,
+        y: oppMid.y - uAngleToOpp.y * 12
+      };
+
+      const isAngleUnknown = angleText.includes('x');
+
+      // Helper to render a high-contrast pill label for sides
+      function buildSidePillHTML(pos, labelObj, roleName, roleShort, isRoleShown) {
+        const isUnknown = labelObj.isUnknown;
+        const pillW = 84;
+        const pillH = isRoleShown ? 46 : 34;
+        const x0 = pos.x - pillW / 2;
+        const y0 = pos.y - pillH / 2;
+
+        // Distinct high-contrast colors
+        let bgFill = '#ffffff';
+        let borderStroke = '#0f172a';
+        let textColor = '#0f172a';
+
+        if (isUnknown) {
+          bgFill = isRevealed ? '#ecfdf5' : '#fef3c7';
+          borderStroke = isRevealed ? '#059669' : '#d97706';
+          textColor = isRevealed ? '#065f46' : '#b45309';
+        } else if (isRoleShown) {
+          bgFill = roleShort === 'O' ? '#fff1f2' : '#f0f9ff';
+          borderStroke = roleShort === 'O' ? '#e11d48' : '#0284c7';
+          textColor = '#0f172a';
+        }
+
+        const badgeColor = roleShort === 'O' ? '#e11d48' : '#0284c7';
+
+        return `
+          <g transform="translate(0, 0)">
+            <rect
+              x="${x0}"
+              y="${y0}"
+              width="${pillW}"
+              height="${pillH}"
+              rx="9"
+              fill="${bgFill}"
+              stroke="${borderStroke}"
+              stroke-width="2.2"
+            />
+            ${
+              isRoleShown
+                ? `<text x="${pos.x}" y="${y0 + 14}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="10.5" fill="${badgeColor}" letter-spacing="0.04em">${roleName.toUpperCase()} (${roleShort})</text>
+                   <text x="${pos.x}" y="${y0 + 35}" text-anchor="middle" font-family="STIX Two Math, Inter, sans-serif" font-weight="800" font-size="18.5" fill="${textColor}">${labelObj.text}</text>`
+                : `<text x="${pos.x}" y="${pos.y + 6.5}" text-anchor="middle" font-family="STIX Two Math, Inter, sans-serif" font-weight="800" font-size="18.5" fill="${textColor}">${labelObj.text}</text>`
+            }
+          </g>
+        `;
+      }
+
+      svg.innerHTML = `
+        <defs>
+          <marker id="opp-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+            <path d="M 0 1.5 L 8.5 5 L 0 8.5 z" fill="#e11d48" />
+          </marker>
+        </defs>
+
+        <!-- Main Right-Angled Triangle Fill & Base Outline -->
+        <polygon
+          points="${vRight.x},${vRight.y} ${vAngle.x},${vAngle.y} ${vOther.x},${vOther.y}"
+          fill="rgba(59, 130, 246, 0.09)"
+          stroke="#0f172a"
+          stroke-width="4"
+          stroke-linejoin="round"
+        />
+
+        <!-- Right-Angle Square Indicator (90°) -->
+        <polygon
+          points="${vRight.x},${vRight.y} ${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}"
+          fill="rgba(15, 23, 42, 0.10)"
+          stroke="#0f172a"
+          stroke-width="2.5"
+          stroke-linejoin="round"
+        />
+
+        <!-- Interior Angle Wedge & Arc at vAngle -->
+        <path
+          d="M ${vAngle.x} ${vAngle.y} L ${arcStart.x} ${arcStart.y} A ${angleRadius} ${angleRadius} 0 0 ${sweepFlag} ${arcEnd.x} ${arcEnd.y} Z"
+          fill="${isAngleUnknown ? 'rgba(245, 158, 11, 0.24)' : 'rgba(79, 70, 229, 0.16)'}"
+          stroke="none"
+        />
+        <path
+          d="M ${arcStart.x} ${arcStart.y} A ${angleRadius} ${angleRadius} 0 0 ${sweepFlag} ${arcEnd.x} ${arcEnd.y}"
+          fill="none"
+          stroke="${isAngleUnknown ? '#d97706' : '#4338ca'}"
+          stroke-width="3"
+          stroke-linecap="round"
+        />
+
+        <!-- Optional O / H Coloured Side Overlays & Pointer Arrow -->
+        ${
+          showOH
+            ? `
+              <!-- Highlight Opposite Side (vRight -> vOther) -->
+              <line
+                x1="${vRight.x}" y1="${vRight.y}"
+                x2="${vOther.x}" y2="${vOther.y}"
+                stroke="#e11d48"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <!-- Highlight Hypotenuse Side (vOther -> vAngle) -->
+              <line
+                x1="${vOther.x}" y1="${vOther.y}"
+                x2="${vAngle.x}" y2="${vAngle.y}"
+                stroke="#0284c7"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+              <!-- Animated Dashed Line from Angle to Opposite Side -->
+              <line
+                x1="${arrowStart.x}" y1="${arrowStart.y}"
+                x2="${arrowEnd.x}" y2="${arrowEnd.y}"
+                stroke="#e11d48"
+                stroke-width="2.5"
+                stroke-dasharray="6 6"
+                class="opp-pointer-line"
+                marker-end="url(#opp-arrow)"
+              />
+            `
+            : ''
+        }
+
+        <!-- Vertex Dots for Extra Crisp Geometry -->
+        <circle cx="${vRight.x}" cy="${vRight.y}" r="4.5" fill="#0f172a" />
+        <circle cx="${vAngle.x}" cy="${vAngle.y}" r="4.5" fill="#0f172a" />
+        <circle cx="${vOther.x}" cy="${vOther.y}" r="4.5" fill="#0f172a" />
+
+        <!-- Angle Value Pill Badge -->
+        <g>
+          <rect
+            x="${angleLabelPos.x - 27}"
+            y="${angleLabelPos.y - 14}"
+            width="54"
+            height="28"
+            rx="7"
+            fill="${isAngleUnknown ? '#fef3c7' : '#eef2ff'}"
+            stroke="${isAngleUnknown ? '#d97706' : '#4338ca'}"
+            stroke-width="2"
+          />
+          <text
+            x="${angleLabelPos.x}"
+            y="${angleLabelPos.y + 5.5}"
+            text-anchor="middle"
+            font-family="STIX Two Math, Inter, sans-serif"
+            font-weight="800"
+            font-size="16.5"
+            fill="${isAngleUnknown ? '#b45309' : '#312e81'}"
+          >${angleText}</text>
+        </g>
+
+        <!-- Opposite & Hypotenuse Side Length Pill Badges -->
+        ${buildSidePillHTML(oppLabelPos, oppLabel, 'Opposite', 'O', showOH)}
+        ${buildSidePillHTML(hypLabelPos, hypLabel, 'Hypotenuse', 'H', showOH)}
+      `;
+    }
+
+    /**
+     * Renders the Worked Rearrangement Panel below the SVG diagram,
+     * including the interactive SOH Formula Triangle right next to the equation steps
+     */
+    function renderWorkedPanel(question, state) {
+      const panel = document.getElementById('worked-panel');
+      const w = question.workedSteps;
+
+      if (!state.revealed) {
+        panel.className = 'rounded-2xl border transition-all duration-300 p-3.5 shrink-0 bg-white border-slate-200 shadow-sm';
+        panel.innerHTML = `
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              ${buildSOHTriangleSVG(question.sohTarget, false, 'w-16 h-14')}
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span class="text-xs font-extrabold uppercase tracking-wider text-amber-700">
+                    Using the SOH Triangle
+                  </span>
+                </div>
+                <p class="text-xs sm:text-sm text-slate-700 leading-snug">
+                  1. Label <strong class="text-rose-700">Opposite (O)</strong> and <strong class="text-sky-700">Hypotenuse (H)</strong>.<br/>
+                  2. Cover the side you want to find in the <strong>SOH</strong> triangle to see whether to multiply (<strong class="text-slate-900">S × H</strong>) or divide (<strong class="text-slate-900">O ÷ S</strong>).
+                </p>
+              </div>
+            </div>
+            <div class="hidden sm:flex flex-col items-end justify-center shrink-0 text-right">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Whiteboards</span>
+              <span class="text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg mt-0.5">
+                Choose A, B, C or D
+              </span>
+            </div>
+          </div>
+        `;
+      } else {
+        panel.className = 'rounded-2xl border-2 transition-all duration-300 p-3.5 shrink-0 bg-emerald-50/70 border-emerald-400 shadow-sm';
+        panel.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-emerald-600 text-white font-extrabold text-[11px] uppercase tracking-wider">
+                Worked Rearrangement
+              </span>
+              <span class="text-xs text-emerald-950 font-semibold hidden sm:inline">
+                ${w.explanation}
+              </span>
+            </div>
+            <span class="text-xs font-mono font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-md shrink-0">
+              ${w.decimalCheck}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-3 bg-white border border-emerald-200 rounded-xl p-2 shadow-sm">
+            <!-- Highlighted SOH Formula Triangle Next to Worked Equation -->
+            <div class="flex flex-col items-center justify-center px-2 py-1 bg-amber-50/80 border border-amber-200 rounded-lg shrink-0">
+              ${buildSOHTriangleSVG(question.sohTarget, true, 'w-16 h-13')}
+              <div class="text-[11px] font-bold mt-0.5 text-slate-800">
+                ${question.sohRuleHTML}
+              </div>
+            </div>
+
+            <!-- 3-Step Worked Equation Progression -->
+            <div class="flex-1 grid grid-cols-3 gap-2 text-center items-center">
+              <!-- Step 1: Formula -->
+              <div class="px-1.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200/80">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 mb-0.5">1. Formula</div>
+                <div class="math-expr text-xs sm:text-sm font-bold text-slate-800">${w.step1}</div>
+              </div>
+              <!-- Step 2: Substitute -->
+              <div class="px-1.5 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200/80">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 mb-0.5">2. Substitute</div>
+                <div class="math-expr text-xs sm:text-sm font-bold text-slate-900">${w.step2}</div>
+              </div>
+              <!-- Step 3: Rearrange -->
+              <div class="px-1.5 py-1.5 rounded-lg bg-emerald-100/80 border border-emerald-400">
+                <div class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-800 mb-0.5">3. Equation</div>
+                <div class="math-expr text-xs sm:text-sm font-extrabold text-slate-900">${w.step3}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * Renders the 2x2 Multiple Choice Option Cards (A, B, C, D) in a clean light theme
+     */
+    function renderOptionsGrid(question, state) {
+      const grid = document.getElementById('options-grid');
+      const { revealed, selectedLetter } = state;
+
+      grid.innerHTML = question.options.map((opt) => {
+        const isSelected = selectedLetter === opt.letter;
+
+        // Determine card styling based on state
+        let cardClasses = 'option-card relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between cursor-pointer border-2 text-left ';
+        let badgeClasses = 'w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center font-extrabold text-lg sm:text-xl shrink-0 transition-colors ';
+        let feedbackHTML = '';
+
+        if (!revealed) {
+          if (isSelected) {
+            cardClasses += 'bg-blue-50/90 border-blue-500 shadow-md ring-2 ring-blue-500/20';
+            badgeClasses += 'bg-blue-600 text-white shadow-sm';
+            feedbackHTML = `
+              <div class="mt-3 pt-2.5 border-t border-blue-200 flex items-center justify-between text-xs font-bold text-blue-700">
+                <span>Selected for class discussion</span>
+                <span>Press Space to reveal</span>
+              </div>
+            `;
+          } else {
+            cardClasses += 'bg-white hover:bg-slate-50/80 border-slate-200 hover:border-blue-400 shadow-sm';
+            badgeClasses += 'bg-slate-100 text-slate-800 border border-slate-300';
+            feedbackHTML = `
+              <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-400">
+                <span>Option ${opt.letter}</span>
+                <span>Click to highlight</span>
+              </div>
+            `;
+          }
+        } else {
+          // REVEALED STATE
+          cardClasses += 'revealed-card ';
+          if (opt.isCorrect) {
+            cardClasses += 'bg-emerald-50 border-emerald-500 shadow-md ring-2 ring-emerald-500/20';
+            badgeClasses += 'bg-emerald-600 text-white shadow-sm';
+            feedbackHTML = `
+              <div class="mt-3 pt-2.5 border-t border-emerald-200">
+                <div class="flex items-center gap-1.5 text-emerald-800 font-extrabold text-xs sm:text-sm mb-0.5">
+                  <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>CORRECT EQUATION</span>
+                  ${isSelected ? '<span class="ml-auto px-2 py-0.5 rounded bg-emerald-200 text-emerald-900 text-[11px]">Selected</span>' : ''}
+                </div>
+                <p class="text-xs text-emerald-900 leading-snug font-medium">${opt.correctDesc}</p>
+              </div>
+            `;
+          } else {
+            cardClasses += 'bg-white border-rose-200 opacity-95';
+            badgeClasses += 'bg-rose-100 text-rose-800 border border-rose-300';
+            feedbackHTML = `
+              <div class="mt-3 pt-2.5 border-t border-rose-100">
+                <div class="flex items-center gap-1.5 text-rose-700 font-extrabold text-xs mb-0.5">
+                  <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Misconception: ${opt.misconceptionTitle}</span>
+                  ${isSelected ? '<span class="ml-auto px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[11px]">Selected</span>' : ''}
+                </div>
+                <p class="text-xs text-slate-600 leading-snug">${opt.misconceptionDesc}</p>
+              </div>
+            `;
+          }
+        }
+
+        return `
+          <button
+            type="button"
+            onclick="selectOption('${opt.letter}')"
+            class="${cardClasses}"
+            aria-label="Option ${opt.letter}"
+          >
+            <!-- Top Row: Option Letter Badge + Large Equation -->
+            <div class="flex items-center gap-4 my-auto py-1">
+              <div class="${badgeClasses}">
+                ${opt.letter}
+              </div>
+              <div class="math-expr text-2xl sm:text-3xl xl:text-4xl font-bold text-slate-900 tracking-wide flex-1 text-center pr-2">
+                ${opt.equationHTML}
+              </div>
+            </div>
+
+            <!-- Bottom Row: Status or Misconception Diagnosis -->
+            ${feedbackHTML}
+          </button>
+        `;
+      }).join('');
+    }
+
+    /**
+     * Updates all UI controls, pills, SOH triangle, and diagrams for the current question
+     */
+    function renderApp() {
+      const question = getActiveQuestion();
+      const state = questionStates[currentQuestionIndex];
+
+      // 1. Update Top Bar Question Pills (Q1 - Q6)
+      for (let i = 0; i < QUESTIONS.length; i++) {
+        const pill = document.getElementById(`nav-q${i}`);
+        const qState = questionStates[i];
+        if (i === currentQuestionIndex) {
+          pill.className = 'q-pill px-3 py-1.5 rounded-lg text-sm font-extrabold transition-all bg-blue-600 text-white shadow-sm';
+        } else if (qState.revealed) {
+          pill.className = 'q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200/70';
+        } else {
+          pill.className = 'q-pill px-3 py-1.5 rounded-lg text-sm font-bold transition-all text-slate-600 hover:text-slate-900 hover:bg-white';
+        }
+      }
+
+      // 2. Update Part 1 (Sides) vs Part 2 (Angles) Section Indicator Badge
+      const modePill = document.getElementById('section-mode-pill');
+      const modeDot = document.getElementById('section-mode-dot');
+      const modeText = document.getElementById('section-mode-text');
+      if (question.category === 'side') {
+        modePill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-extrabold';
+        modeDot.className = 'w-2 h-2 rounded-full bg-blue-600';
+        modeText.textContent = 'Part 1: Missing Sides (Q1–Q3)';
+      } else {
+        modePill.className = 'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-extrabold';
+        modeDot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        modeText.textContent = 'Part 2: Missing Angles (Q4–Q6)';
+      }
+
+      // 3. Update Diagram Header & O/H Toggle Button
+      document.getElementById('q-badge').textContent = `Question ${question.id} of ${QUESTIONS.length}`;
+      document.getElementById('q-variation-tag').textContent = question.variationTag;
+      document.getElementById('question-prompt').innerHTML = question.prompt;
+
+      // Render the SOH Formula Triangle right next to the Sine Ratio Equation in the Prompt Banner
+      const headerSOH = document.getElementById('header-soh-triangle');
+      headerSOH.innerHTML = `
+        ${buildSOHTriangleSVG(question.sohTarget, state.revealed, 'w-14 h-12')}
+        <div class="hidden sm:flex flex-col leading-tight">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider ${state.revealed ? 'text-amber-700' : 'text-slate-400'}">
+            ${state.revealed ? 'Target in SOH' : 'SOH Triangle'}
+          </span>
+          <span class="text-xs font-bold text-slate-800">
+            ${state.revealed ? question.sohRuleHTML : '<span class="text-rose-700">O</span> = <span class="text-indigo-700">S</span> × <span class="text-sky-700">H</span>'}
+          </span>
+        </div>
+      `;
+
+      const ohBtn = document.getElementById('toggle-labels-btn');
+      const ohDot = document.getElementById('oh-dot');
+      const ohText = document.getElementById('oh-btn-text');
+      if (state.showOH) {
+        ohBtn.className = 'flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border transition-all shadow-sm bg-rose-50 text-rose-800 border-rose-300';
+        ohDot.className = 'w-2 h-2 rounded-full bg-rose-600';
+        ohText.textContent = 'Hide O / H Labels';
+      } else {
+        ohBtn.className = 'flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border transition-all shadow-sm bg-white text-slate-700 border-slate-300 hover:bg-slate-50';
+        ohDot.className = 'w-2 h-2 rounded-full bg-slate-400';
+        ohText.textContent = 'Show O / H Labels';
+      }
+
+      // 4. Render SVG, Worked Panel, and Option Cards
+      renderTriangleSVG(question, state);
+      renderWorkedPanel(question, state);
+      renderOptionsGrid(question, state);
+
+      // 5. Update Footer Navigation & Reveal Button
+      document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+      document.getElementById('next-btn').disabled = currentQuestionIndex === QUESTIONS.length - 1;
+
+      const revealBtn = document.getElementById('reveal-btn');
+      const revealBtnText = document.getElementById('reveal-btn-text');
+      if (state.revealed) {
+        revealBtn.className = 'flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-extrabold text-sm sm:text-base tracking-wide transition-all shadow-sm bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300';
+        revealBtnText.textContent = 'Hide Solution';
+      } else {
+        revealBtn.className = 'flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-extrabold text-sm sm:text-base tracking-wide transition-all shadow-md bg-emerald-600 hover:bg-emerald-500 text-white';
+        revealBtnText.textContent = 'Reveal Solution';
+      }
+    }
+
+    // ---------------- INTERACTION HANDLERS ----------------
+    function goToQuestion(index) {
+      if (index < 0 || index >= QUESTIONS.length) return;
+      currentQuestionIndex = index;
+      renderApp();
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderApp();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIndex < QUESTIONS.length - 1) {
+        currentQuestionIndex++;
+        renderApp();
+      }
+    }
+
+    function toggleReveal() {
+      const state = questionStates[currentQuestionIndex];
+      state.revealed = !state.revealed;
+      // Automatically show O/H labels when solution is revealed to reinforce scaffolding
+      if (state.revealed) {
+        state.showOH = true;
+      }
+      renderApp();
+    }
+
+    function toggleOHLabels() {
+      const state = questionStates[currentQuestionIndex];
+      state.showOH = !state.showOH;
+      renderApp();
+    }
+
+    function selectOption(letter) {
+      const state = questionStates[currentQuestionIndex];
+      if (state.revealed) return;
+      state.selectedLetter = state.selectedLetter === letter ? null : letter;
+      renderApp();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast-msg');
+      toast.textContent = message;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2800);
+    }
+
+    function toggleFullScreen() {
+      try {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {
+            showToast('Full screen is restricted by this preview frame. Open in a new tab or press F11.');
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      } catch (e) {
+        showToast('Press F11 on your keyboard to toggle full screen.');
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const isFS = !!document.fullscreenElement;
+      document.getElementById('fs-icon-expand').classList.toggle('hidden', isFS);
+      document.getElementById('fs-icon-compress').classList.toggle('hidden', !isFS);
+      document.getElementById('fs-btn-text').textContent = isFS ? 'Exit Full Screen' : 'Full Screen';
+    });
+
+    // Keyboard Shortcuts for Classroom Flow
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextQuestion();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevQuestion();
+      } else if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        toggleReveal();
+      } else if (e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        toggleOHLabels();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullScreen();
+      } else if (['a', 'A', 'b', 'B', 'c', 'C', 'd', 'D'].includes(e.key)) {
+        selectOption(e.key.toUpperCase());
+      } else if (['1', '2', '3', '4', '5', '6'].includes(e.key)) {
+        goToQuestion(parseInt(e.key, 10) - 1);
+      }
+    });
+
+    // Initialize on load
+    window.onload = function () {
+      renderApp();
+    };
+  </script>
+</body>
+</html>
